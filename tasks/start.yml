@@ -21,7 +21,7 @@
       INVITATIONS_ALLOWED: "{{ vaultwarden_invitations_allowed }}"
       DISABLE_ADMIN_TOKEN: "{{ vaultwarden_disable_admin_token }}"
       LOG_FILE: "{{ vaultwarden_log_file }}"
-      DOMAIN: "https:/{{ vaultwarden_name }}.{{ vaultwarden_domain }}"
+      DOMAIN: "https://{{ vaultwarden_name }}.{{ vaultwarden_domain }}"
     volumes:
       - "{{ vaultwarden_data_dir }}:/data:rw"
       - "/var/log/docker:/var/log/docker:rw"
