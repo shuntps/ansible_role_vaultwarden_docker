@@ -25,8 +25,8 @@
     volumes:
       - "{{ vaultwarden_data_dir }}:/data:rw"
       - "/var/log/docker:/var/log/docker:rw"
-    ports:
-      - "{{ vaultwarden_port }}:80"
+    # ports:
+    #   - "{{ vaultwarden_port }}:80"
     networks:
       - name: "{{ vaultwarden_network_mode }}"
     purge_networks: "true"
