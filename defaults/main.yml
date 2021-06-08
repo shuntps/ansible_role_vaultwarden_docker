@@ -1,0 +1,35 @@
+---
+# Shared docker variable
+docker_data_dir: /data/docker
+docker_external_network: frontend
+docker_external_network_subnet: 192.168.250.0/24
+docker_internal_network: backend
+docker_internal_network_subnet: 192.168.50.0/24
+docker_domain: example.com
+
+# General
+vaultwarden_enabled: "false"
+vaultwarden_name: vaultwarden
+vaultwarden_version: latest
+vaultwarden_restart_policy: always
+vaultwarden_recreate: "false"
+
+# Environment
+vaultwarden_admin_token: your_vaultwarden_admin_token
+vaultwarden_websocket_enabled: "true"
+vaultwarden_allow_signups: "false"
+vaultwarden_signups_verify: "false"
+vaultwarden_invitations_allowed: "true"
+vaultwarden_disable_admin_token: "false"
+vaultwarden_log_file: /var/log/docker/vaultwarden.log # For fail2ban
+
+# Directories
+vaultwarden_data_dir: "{{ docker_data_dir }}/{{ vaultwarden_name }}"
+
+# Network
+vaultwarden_available_externally: "true"
+vaultwarden_domain: "{{ docker_domain }}"
+vaultwarden_network_mode: "{{ docker_external_network }}"
+vaultwarden_port: "80"
+vaultwarden_svc_port: "80"
+vaultwarden_ws_port: "3012"

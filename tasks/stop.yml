@@ -1,0 +1,5 @@
+---
+- name: Stop "{{ vaultwarden_name }}" container
+  community.docker.docker_container:
+    name: "{{ vaultwarden_name }}"
+    state: absent

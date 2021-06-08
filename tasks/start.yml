@@ -1,0 +1,53 @@
+---
+- name: Create "{{ vaultwarden_name }}" directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ vaultwarden_data_dir }}"
+
+- name: Start "{{ vaultwarden_name }}" container
+  community.docker.docker_container:
+    name: "{{ vaultwarden_name }}"
+    image: "vaultwarden/server:{{ vaultwarden_version }}"
+    restart_policy: "{{ vaultwarden_restart_policy }}"
+    recreate: "{{ vaultwarden_recreate }}"
+    pull: "true"
+    env:
+      ADMIN_TOKEN: "{{ vaultwarden_admin_token }}"
+      WEBSOCKET_ENABLED: "{{ vaultwarden_websocket_enabled }}"
+      SIGNUPS_ALLOWED: "{{ vaultwarden_allow_signups }}"
+      SIGNUPS_VERIFY: "{{ vaultwarden_signups_verify }}"
+      INVITATIONS_ALLOWED: "{{ vaultwarden_invitations_allowed }}"
+      DISABLE_ADMIN_TOKEN: "{{ vaultwarden_disable_admin_token }}"
+      LOG_FILE: "{{ vaultwarden_log_file }}"
+      DOMAIN: "https:/{{ vaultwarden_name }}.{{ vaultwarden_domain }}"
+    volumes:
+      - "{{ vaultwarden_data_dir }}:/data:rw"
+      - "/var/log/docker:/var/log/docker:rw"
+    ports:
+      - "{{ vaultwarden_port }}:80"
+    networks:
+      - name: "{{ vaultwarden_network_mode }}"
+    purge_networks: "true"
+    networks_cli_compatible: "true"
+    labels:
+      traefik.enable: "{{ vaultwarden_available_externally }}"
+      ## HTTP Routers
+      traefik.http.routers.vaultwarden-rtr.entrypoints: https
+      traefik.http.routers.vaultwarden-rtr.rule: "Host(`{{ vaultwarden_name }}.{{ vaultwarden_domain }}`)"
+      ## Middlewares
+      traefik.http.routers.vaultwarden-rtr.middlewares: chain-no-auth@file
+      ## HTTP Services
+      traefik.http.routers.vaultwarden-rtr.service: vaultwarden-svc
+      traefik.http.services.vaultwarden-svc.loadbalancer.server.port: "{{ vaultwarden_svc_port }}"
+      ## vaultwarden WebSocket
+      traefik.http.routers.vaultwardenhub-rtr.entrypoints: https
+      traefik.http.routers.vaultwardenhub-rtr.rule: "(Host(`{{ vaultwarden_name }}.{{ vaultwarden_domain }}`) && Path(`/notifications/hub`))"
+      traefik.http.routers.vaultwardenhub-rtr.service: vaultwardenhub-svc
+      traefik.http.services.vaultwardenhub-svc.loadbalancer.server.port: "{{ vaultwarden_ws_port }}"
+      ## Admin Page - Used when DISABLE_ADMIN_TOKEN=true above
+      traefik.http.routers.vaultwardenadmin-rtr.entrypoints: https
+      traefik.http.routers.vaultwardenadmin-rtr.rule: "(Host(`{{ vaultwarden_name }}.{{ vaultwarden_domain }}`) && Path(`/admin`))"
+      traefik.http.routers.vaultwardenadmin-rtr.middlewares: chain-oauth@file
+      traefik.http.routers.vaultwardenadmin-rtr.service: vaultwarden-svc
